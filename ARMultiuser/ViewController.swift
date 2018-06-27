@@ -10,7 +10,7 @@ import SceneKit
 import ARKit
 import MultipeerConnectivity
 
-class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
+class ViewController: UIViewController {
     // MARK: - IBOutlets
     
     @IBOutlet weak var sessionInfoView: UIView!
@@ -40,21 +40,34 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     // MARK: - View Life Cycle
     
     var multipeerSession: MultipeerSession!
-    
+	
+	var cloudPoints = CloudPoints()
+	
     override func viewDidLoad() {
         super.viewDidLoad()
         restartMapButton.setTitle("ShouldRestartMap = \(shouldRestartMap)", for: .normal) // TODO refactor
 
         // Loading from other users
        multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
-        
-        let timer = Timer(timeInterval: 2, repeats: true) { [weak self] _ in
-            if let cloud = self?.sceneView.session.currentFrame?.rawFeaturePoints {
-                print("There are features \(cloud.points.count)")
-             }
-        }
-        timer.fire()
-        
+
+		Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+			
+			guard let `self` = self else { return }
+			
+			if let cloud = self.sceneView.session.currentFrame?.rawFeaturePoints {
+				for point in cloud.points {
+					let didAddPoint = self.cloudPoints.addIfNeeded(point)
+					if didAddPoint {
+						let childNode = NodeCreator.blueBox()
+						childNode.position = SCNVector3Make(point.x, point.y, point.z)
+						self.sceneView.scene.rootNode.addChildNode(childNode)
+					}
+				}
+				
+				print("There are features \(cloud.points.count)")
+			}
+		}
+		
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -80,7 +93,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             let configuration = ARWorldTrackingConfiguration()
             configuration.planeDetection = .horizontal
             sceneView.session.run(configuration)
-            
         } else {
             LocalDataManager.loadLocalMapData(receivedDataHandler: receivedData)
         }
@@ -97,45 +109,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         // Pause the view's AR session.
         sceneView.session.pause()
     }
-    
-    // MARK: - ARSCNViewDelegate
-    
-    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        
-        
-        
-        print("Did add node for anchor name \(anchor.name)")
-        
-        if let name = anchor.name, name.hasPrefix("panda") {
-            node.addChildNode(loadRedPandaModel())
-        } else {
-            node.addChildNode(NodeCreator.blueBox())
-        }
-    }
-    
-    // MARK: - ARSessionDelegate
-    
-    func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
-        updateSessionInfoLabel(for: session.currentFrame!, trackingState: camera.trackingState)
-    }
-    
-    /// - Tag: CheckMappingStatus
-    func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        switch frame.worldMappingStatus {
-        case .notAvailable, .limited:
-            sendMapButton.isEnabled = false
-            saveMapButton.isEnabled = false
-        case .extending:
-            sendMapButton.isEnabled = !multipeerSession.connectedPeers.isEmpty
-            saveMapButton.isEnabled = true
-        case .mapped:
-            sendMapButton.isEnabled = !multipeerSession.connectedPeers.isEmpty
-            saveMapButton.isEnabled = true
-        }
-        mappingStatusLabel.text = frame.worldMappingStatus.description
-        updateSessionInfoLabel(for: frame, trackingState: frame.camera.trackingState)
-    }
-    
+	
     // MARK: - ARSessionObserver
     
     func sessionWasInterrupted(_ session: ARSession) {
@@ -223,12 +197,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             
             for anchor in worldMap.anchors {
                 sceneView.session.add(anchor: anchor)
-                if let node = sceneView.node(for: anchor), let name = anchor.name, name.hasPrefix("panda") {
-                    print("Found node \(node.name)")
-                    node.addChildNode(loadRedPandaModel())
-                } else {
-                    print("node not found")
-                }
             }
             
             // Remember who provided the map for showing UI feedback.
@@ -244,9 +212,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
             print("unknown data recieved from \(peer)")
         }
     }
-    
-    // MARK: - AR session management
-    
+}
+
+// MARK: - AR session management
+
+extension ViewController {
+	
     private func updateSessionInfoLabel(for frame: ARFrame, trackingState: ARCamera.TrackingState) {
         // Update the UI to provide feedback on the state of the AR experience.
         let message: String
@@ -295,14 +266,41 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
-    
-    // MARK: - AR session management
-    private func loadRedPandaModel() -> SCNNode {
-        let sceneURL = Bundle.main.url(forResource: "max", withExtension: "scn", subdirectory: "Assets.scnassets")!
-        let referenceNode = SCNReferenceNode(url: sceneURL)!
-        referenceNode.load()
-        
-        return referenceNode
-    }
 }
 
+extension ViewController: ARSCNViewDelegate {
+	func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+		
+		print("Did add node for anchor name \(anchor.name)")
+		
+		if let name = anchor.name, name.hasPrefix("panda") {
+			node.addChildNode(NodeCreator.createRedPandaModel())
+		} else {
+			node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
+		}
+	}
+}
+
+extension ViewController: ARSessionDelegate {
+	
+	func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
+		updateSessionInfoLabel(for: session.currentFrame!, trackingState: camera.trackingState)
+	}
+	
+	func session(_ session: ARSession, didUpdate frame: ARFrame) {
+		switch frame.worldMappingStatus {
+		case .notAvailable, .limited:
+			sendMapButton.isEnabled = false
+			saveMapButton.isEnabled = false
+		case .extending:
+			sendMapButton.isEnabled = !multipeerSession.connectedPeers.isEmpty
+			saveMapButton.isEnabled = true
+		case .mapped:
+			sendMapButton.isEnabled = !multipeerSession.connectedPeers.isEmpty
+			saveMapButton.isEnabled = true
+		}
+		mappingStatusLabel.text = frame.worldMappingStatus.description
+		updateSessionInfoLabel(for: frame, trackingState: frame.camera.trackingState)
+	}
+	
+}

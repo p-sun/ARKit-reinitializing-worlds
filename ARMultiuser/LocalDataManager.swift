@@ -21,7 +21,8 @@ struct LocalDataManager {
     
     static func saveData(_ data: Data) {
         do {
-          try data.write(to: filePath)
+			print("Saving data \(data.formattedSizeString())")
+          	try data.write(to: filePath)
         } catch {
             print("Could not save data. \(error)")
         }
@@ -35,4 +36,13 @@ struct LocalDataManager {
             print("Could not load data. \(error)")
         }
     }
+}
+
+private extension Data {
+	func formattedSizeString() -> String {
+		let formatter = ByteCountFormatter()
+		formatter.allowedUnits = [.useMB] // optional: restricts the units to MB only
+		formatter.countStyle = .file
+		return formatter.string(fromByteCount: Int64(count))
+	}
 }
