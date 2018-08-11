@@ -52,22 +52,21 @@ class ViewController: UIViewController {
 
 		Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
 			
-			guard let `self` = self else { return }
+			guard let strongSelf = self else { return }
 			
-			if let cloud = self.sceneView.session.currentFrame?.rawFeaturePoints {
+			if let cloud = strongSelf.sceneView.session.currentFrame?.rawFeaturePoints {
 				for point in cloud.points {
-					let didAddPoint = self.cloudPoints.addIfNeeded(point)
+					let didAddPoint = strongSelf.cloudPoints.addIfNeeded(point)
 					if didAddPoint {
-						let childNode = NodeCreator.blueBox()
+						let childNode = NodeCreator.box(color: .purple)
 						childNode.position = SCNVector3Make(point.x, point.y, point.z)
-						self.sceneView.scene.rootNode.addChildNode(childNode)
+						strongSelf.sceneView.scene.rootNode.addChildNode(childNode)
 					}
 				}
 				
 				print("There are features \(cloud.points.count)")
 			}
 		}
-		
     }
     
     override func viewDidAppear(_ animated: Bool) {
