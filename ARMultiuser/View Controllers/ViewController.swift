@@ -45,18 +45,7 @@ class ViewController: UIViewController {
 	var cloudPoints = CloudPoints()
     
     private var featurePointsCloudParent = SCNNode()
-        
-        
-        
-        
-        
-        
-//        = {
-//        let node = NodeCreator.createRedPandaModel()
-//        node.name = "featurePointsParentName" // TODO remove
-//        return node
-//    }()
-	
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         restartMapButton.setTitle("ShouldRestartMap = \(shouldRestartMap)", for: .normal) // TODO refactor
