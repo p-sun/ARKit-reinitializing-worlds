@@ -17,12 +17,13 @@ class ViewController: UIViewController {
     @IBOutlet weak var sessionInfoLabel: UILabel!
     @IBOutlet weak var sceneView: ARSCNView!
     
-    @IBOutlet weak var sendMapButton: UIButton!
+    @IBOutlet weak var restartMapButton: UIButton!
     @IBOutlet weak var saveMapButton: UIButton!
-
+    @IBOutlet weak var sendMapButton: UIButton!
+    @IBOutlet weak var showCloudPointsButton: UIButton!
+    
     @IBOutlet weak var mappingStatusLabel: UILabel!
     
-    @IBOutlet weak var restartMapButton: UIButton!
     var shouldRestartMap: Bool {
         get {
             return UserDefaults.standard.value(forKey: "ShouldRestartMap") as? Bool ?? false
@@ -42,31 +43,46 @@ class ViewController: UIViewController {
     var multipeerSession: MultipeerSession!
 	
 	var cloudPoints = CloudPoints()
+    
+    private var featurePointsCloudParent = SCNNode()
+        
+        
+        
+        
+        
+        
+//        = {
+//        let node = NodeCreator.createRedPandaModel()
+//        node.name = "featurePointsParentName" // TODO remove
+//        return node
+//    }()
 	
     override func viewDidLoad() {
         super.viewDidLoad()
         restartMapButton.setTitle("ShouldRestartMap = \(shouldRestartMap)", for: .normal) // TODO refactor
-
+        showCloudPointsButton.setTitle("Show Cloud Points", for: .normal)
+        
         // Loading from other users
        multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
 
-		Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
-			
-			guard let strongSelf = self else { return }
-			
-			if let cloud = strongSelf.sceneView.session.currentFrame?.rawFeaturePoints {
-				for point in cloud.points {
-					let didAddPoint = strongSelf.cloudPoints.addIfNeeded(point)
-					if didAddPoint {
-						let childNode = NodeCreator.box(color: .purple)
-						childNode.position = SCNVector3Make(point.x, point.y, point.z)
-						strongSelf.sceneView.scene.rootNode.addChildNode(childNode)
-					}
-				}
-				
-				print("There are features \(cloud.points.count)")
-			}
-		}
+//        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+//
+//            guard let strongSelf = self else { return }
+//
+//            if let cloud = strongSelf.sceneView.session.currentFrame?.rawFeaturePoints {
+////                for point in cloud.points {
+////                    let didAddPoint = strongSelf.cloudPoints.addIfNeeded(point)
+////                    if didAddPoint {
+////                        let childNode = NodeCreator.box(color: .purple)
+////                        childNode.position = SCNVector3Make(point.x, point.y, point.z)
+////                        strongSelf.sceneView.scene.rootNode.addChildNode(childNode)
+////                    }
+////                }
+//
+//                //print("There are features \(cloud.points.count)")
+//            }
+//        }
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -170,11 +186,50 @@ class ViewController: UIViewController {
                 else { print("Error: \(error!.localizedDescription)"); return }
             
             print("Saving map with \(map.anchors.count) anchors")
-            
-            guard let data = try? NSKeyedArchiver.archivedData(withRootObject: map, requiringSecureCoding: true)
-                else { fatalError("can't encode map") }
+
+            guard let data = try? NSKeyedArchiver.archivedData(withRootObject: map,
+                                                               requiringSecureCoding: true) else {
+                    fatalError("can't encode map")
+            }
             LocalDataManager.saveData(data)
         }
+    }
+    
+    @IBAction func showCloudPoints(_ sender: Any) {
+        sceneView.session.getCurrentWorldMap { [weak self] worldMap, error in
+            
+            print("Got world map")
+            
+            guard let strongSelf = self else {
+                return
+            }
+            
+            guard let map = worldMap else {
+                print("Error: \(error!.localizedDescription)")
+                return
+            }
+            
+            print("MAP points: \(map.rawFeaturePoints.points.count) points. FRAME points \(strongSelf.sceneView.session.currentFrame?.rawFeaturePoints?.points.count) points")
+            
+            self?.drawFeaturePoints(cloudToDraw: map.rawFeaturePoints)
+        }
+    }
+    
+    private func drawFeaturePoints(cloudToDraw: ARPointCloud) {
+        
+        featurePointsCloudParent.removeFromParentNode()
+        
+        featurePointsCloudParent = SCNNode()
+        sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
+
+        for point in cloudToDraw.points {
+            let childNode = NodeCreator.box(color: .green, size: 0.003)
+            childNode.name = "Green Box"
+            childNode.position = SCNVector3Make(point.x, point.y, point.z)
+            featurePointsCloudParent.addChildNode(childNode)
+        }
+        
+        print("total nodes \(featurePointsCloudParent.childNodes.count)")
     }
     
     var mapProvider: MCPeerID?
@@ -182,7 +237,7 @@ class ViewController: UIViewController {
     /// - Tag: ReceiveData
     func receivedData(_ data: Data, from peer: MCPeerID) {
         
-        if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(of: ARWorldMap.classForKeyedUnarchiver(), from: data),
+        if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARWorldMap.classForKeyedUnarchiver()], from: data),
             let worldMap = unarchived as? ARWorldMap {
             
             // Run the session with the received world map.
@@ -202,7 +257,7 @@ class ViewController: UIViewController {
             mapProvider = peer
         }
         else
-        if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(of: ARAnchor.classForKeyedUnarchiver(), from: data),
+            if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARAnchor.classForKeyedUnarchiver()], from: data),
             let anchor = unarchived as? ARAnchor {
             
             sceneView.session.add(anchor: anchor)
@@ -275,7 +330,7 @@ extension ViewController: ARSCNViewDelegate {
 		if let name = anchor.name, name.hasPrefix("panda") {
 			node.addChildNode(NodeCreator.createRedPandaModel())
 		} else {
-			node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
+            node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
 		}
 	}
 }

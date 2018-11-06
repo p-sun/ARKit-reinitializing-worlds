@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14269.14" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7dh-A0-qGE">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7dh-A0-qGE">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14252.5"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -26,7 +26,7 @@
                                 </connections>
                             </arscnView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="AxE-Oe-8LO">
-                                <rect key="frame" x="117.5" y="488" width="140" height="138"/>
+                                <rect key="frame" x="117.5" y="436" width="140" height="190"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="opL-fC-cd5" customClass="RoundedButton" customModule="ARMultiuser" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="140" height="34"/>
@@ -53,6 +53,16 @@
                                         <state key="normal" title="Send World Map"/>
                                         <connections>
                                             <action selector="shareSession:" destination="7dh-A0-qGE" eventType="touchUpInside" id="LXd-41-0lM"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mLW-kc-kQR" userLabel="Show Cloud Points" customClass="RoundedButton" customModule="ARMultiuser" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="156" width="140" height="34"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <inset key="contentEdgeInsets" minX="13" minY="8" maxX="13" maxY="8"/>
+                                        <state key="normal" title="___ nothing ____"/>
+                                        <connections>
+                                            <action selector="shareSession:" destination="7dh-A0-qGE" eventType="touchUpInside" id="aGn-GJ-B4t"/>
+                                            <action selector="showCloudPoints:" destination="7dh-A0-qGE" eventType="touchUpInside" id="fmP-Tv-SHO"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -99,7 +109,7 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aD6-EU-VHg">
-                                <rect key="frame" x="166.5" y="447.5" width="42" height="20.5"/>
+                                <rect key="frame" x="166.5" y="395.5" width="42" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -131,6 +141,7 @@
                         <outlet property="sendMapButton" destination="gad-7G-M17" id="yj3-eb-u44"/>
                         <outlet property="sessionInfoLabel" destination="hCE-IA-wLv" id="fqx-0o-IdX"/>
                         <outlet property="sessionInfoView" destination="37h-bD-Iyn" id="e6g-gN-reW"/>
+                        <outlet property="showCloudPointsButton" destination="mLW-kc-kQR" id="DLE-y3-Ndk"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hvH-ud-t1P" userLabel="First Responder" sceneMemberID="firstResponder"/>
