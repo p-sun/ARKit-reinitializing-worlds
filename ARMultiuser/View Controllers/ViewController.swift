@@ -11,7 +11,8 @@ import ARKit
 import MultipeerConnectivity
 
 class ViewController: UIViewController {
-    // MARK: - IBOutlets
+
+    // MARK: - Actions and Outlets
     
     @IBOutlet weak var sessionInfoView: UIView!
     @IBOutlet weak var sessionInfoLabel: UILabel!
@@ -23,8 +24,12 @@ class ViewController: UIViewController {
     @IBOutlet weak var showCloudPointsButton: UIButton!
     
     @IBOutlet weak var mappingStatusLabel: UILabel!
+
+    @IBAction func didPressRestartMap(_ sender: Any) {
+        shouldRestartMap.toggle()
+    }
     
-    var shouldRestartMap: Bool {
+    private var shouldRestartMap: Bool {
         get {
             return UserDefaults.standard.value(forKey: "ShouldRestartMap") as? Bool ?? false
         }
@@ -34,17 +39,15 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func didPressRestartMap(_ sender: Any) {
-        shouldRestartMap.toggle()
-    }
-    
-    // MARK: - View Life Cycle
-    
-    var multipeerSession: MultipeerSession!
+    private var multipeerSession: MultipeerSession!
 	
-	var cloudPoints = CloudPoints()
+	private var cloudPoints = CloudPoints()
     
     private var featurePointsCloudParent = SCNNode()
+    
+    private var mapProvider: MCPeerID?
+    
+    // MARK: - View Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -113,28 +116,7 @@ class ViewController: UIViewController {
         // Pause the view's AR session.
         sceneView.session.pause()
     }
-	
-    // MARK: - ARSessionObserver
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay.
-        sessionInfoLabel.text = "Session was interrupted"
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required.
-        sessionInfoLabel.text = "Session interruption ended"
-    }
-    
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user.
-        sessionInfoLabel.text = "Session failed: \(error.localizedDescription)"
-        resetTracking(nil)
-    }
-    
-    func sessionShouldAttemptRelocalization(_ session: ARSession) -> Bool {
-        return true
-    }
+
     
     // MARK: - Multiuser shared session
     
@@ -221,9 +203,6 @@ class ViewController: UIViewController {
         print("total nodes \(featurePointsCloudParent.childNodes.count)")
     }
     
-    var mapProvider: MCPeerID?
-
-    /// - Tag: ReceiveData
     func receivedData(_ data: Data, from peer: MCPeerID) {
         
         if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARWorldMap.classForKeyedUnarchiver()], from: data),
@@ -311,20 +290,9 @@ extension ViewController {
     }
 }
 
-extension ViewController: ARSCNViewDelegate {
-	func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-		
-		print("Did add node for anchor name \(anchor.name)")
-		
-		if let name = anchor.name, name.hasPrefix("panda") {
-			node.addChildNode(NodeCreator.createRedPandaModel())
-		} else {
-            node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
-		}
-	}
-}
-
 extension ViewController: ARSessionDelegate {
+    
+    // MARK: Session Frame and Camera
 	
 	func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
 		updateSessionInfoLabel(for: session.currentFrame!, trackingState: camera.trackingState)
@@ -345,5 +313,41 @@ extension ViewController: ARSessionDelegate {
 		mappingStatusLabel.text = frame.worldMappingStatus.description
 		updateSessionInfoLabel(for: frame, trackingState: frame.camera.trackingState)
 	}
-	
+
+    // MARK: ARSessionObserver
+    
+    func sessionWasInterrupted(_ session: ARSession) {
+        // Inform the user that the session has been interrupted, for example, by presenting an overlay.
+        sessionInfoLabel.text = "Session was interrupted"
+    }
+    
+    func sessionInterruptionEnded(_ session: ARSession) {
+        // Reset tracking and/or remove existing anchors if consistent tracking is required.
+        sessionInfoLabel.text = "Session interruption ended"
+    }
+    
+    func session(_ session: ARSession, didFailWithError error: Error) {
+        // Present an error message to the user.
+        sessionInfoLabel.text = "Session failed: \(error.localizedDescription)"
+        resetTracking(nil)
+    }
+    
+    func sessionShouldAttemptRelocalization(_ session: ARSession) -> Bool {
+        return true
+    }
+}
+
+// MARK: - Adding Nodes
+
+extension ViewController: ARSCNViewDelegate {
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        
+        print("Did add node for anchor name \(anchor.name)")
+        
+        if let name = anchor.name, name.hasPrefix("panda") {
+            node.addChildNode(NodeCreator.createRedPandaModel())
+        } else {
+            node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
+        }
+    }
 }
