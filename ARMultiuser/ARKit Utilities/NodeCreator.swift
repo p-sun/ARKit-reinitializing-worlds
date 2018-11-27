@@ -37,14 +37,14 @@ struct NodeCreator {
 		return quiverNode
 	}
 
-    static func box(color: UIColor) -> SCNNode {
-        let box = SCNBox(width: 0.001, height: 0.001, length: 0.001, chamferRadius: 0)
-        box.firstMaterial?.diffuse.contents = color
-        
-        let node = SCNNode()
-        node.geometry = box
-        return node
-    }
+    static func box(color: UIColor, size: CGFloat = 0.001) -> SCNNode {
+		let box = SCNBox(width: size, height: size, length: size, chamferRadius: 0)
+		box.firstMaterial?.diffuse.contents = color
+		
+		let node = SCNNode()
+		node.geometry = box
+		return node
+	}
     
     static func blueBox() -> SCNNode {
         let box = SCNBox(width: 0.001, height: 0.001, length: 0.001, chamferRadius: 0)

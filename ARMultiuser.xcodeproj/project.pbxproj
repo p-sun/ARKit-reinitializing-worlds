@@ -16,7 +16,9 @@
 		842316E71F2030C300D189D1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 842316E51F2030C300D189D1 /* Main.storyboard */; };
 		842316EC1F2030C300D189D1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 842316EA1F2030C300D189D1 /* LaunchScreen.storyboard */; };
 		84ABEA0A1F3D15E70052D547 /* Assets.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 84ABEA091F3D15E70052D547 /* Assets.scnassets */; };
+		9B7CEC6321ACDBDE00173C7A /* ColorBoxAnchor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7CEC6221ACDBDE00173C7A /* ColorBoxAnchor.swift */; };
 		9B8777D320E1E953007D6349 /* CloudPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8777D220E1E953007D6349 /* CloudPoints.swift */; };
+		DD7D16512191F9620065F4DB /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7D16502191F9620065F4DB /* CapturedImageSampler.swift */; };
 		DDA9B17220E16C8E00D48CDA /* LocalDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9B17120E16C8E00D48CDA /* LocalDataManager.swift */; };
 		DDA9B17420E1977400D48CDA /* NodeCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9B17320E1977400D48CDA /* NodeCreator.swift */; };
 /* End PBXBuildFile section */
@@ -33,10 +35,12 @@
 		842316EB1F2030C300D189D1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		842316ED1F2030C300D189D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		84ABEA091F3D15E70052D547 /* Assets.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = Assets.scnassets; sourceTree = "<group>"; };
+		9B7CEC6221ACDBDE00173C7A /* ColorBoxAnchor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorBoxAnchor.swift; sourceTree = "<group>"; };
 		9B8777D220E1E953007D6349 /* CloudPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudPoints.swift; sourceTree = "<group>"; };
 		B8C502E0B8C46C2000000001 /* SampleCode.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 		B8C7CF80B8C72A5000000001 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 		C85709121F34FC2200BB957F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DD7D16502191F9620065F4DB /* CapturedImageSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturedImageSampler.swift; sourceTree = "<group>"; };
 		DDA9B17120E16C8E00D48CDA /* LocalDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataManager.swift; sourceTree = "<group>"; };
 		DDA9B17320E1977400D48CDA /* NodeCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeCreator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -74,14 +78,11 @@
 		842316DE1F2030C300D189D1 /* ARMultiuser */ = {
 			isa = PBXGroup;
 			children = (
+				DD7D16552191FA120065F4DB /* View Controllers */,
+				DD7D16532191F9F30065F4DB /* Views */,
+				DD7D16522191F9790065F4DB /* ARKit Utilities */,
+				DD7D16562191FA2B0065F4DB /* Utilities */,
 				842316DF1F2030C300D189D1 /* AppDelegate.swift */,
-				842316E31F2030C300D189D1 /* ViewController.swift */,
-				9B8777D220E1E953007D6349 /* CloudPoints.swift */,
-				DDA9B17320E1977400D48CDA /* NodeCreator.swift */,
-				11C983EB20953B7900394C67 /* MultipeerSession.swift */,
-				DDA9B17120E16C8E00D48CDA /* LocalDataManager.swift */,
-				111DC86820ACAB690037F7B1 /* RoundedButton.swift */,
-				11E97209209A355F006E3D26 /* Utilities.swift */,
 				842316E51F2030C300D189D1 /* Main.storyboard */,
 				842316EA1F2030C300D189D1 /* LaunchScreen.storyboard */,
 				842316ED1F2030C300D189D1 /* Info.plist */,
@@ -89,6 +90,14 @@
 				112FE5661F4F95A200BF85EA /* Assets.xcassets */,
 			);
 			path = ARMultiuser;
+			sourceTree = "<group>";
+		};
+		9B7CEC6121ACDBC700173C7A /* ARAnchors */ = {
+			isa = PBXGroup;
+			children = (
+				9B7CEC6221ACDBDE00173C7A /* ColorBoxAnchor.swift */,
+			);
+			path = ARAnchors;
 			sourceTree = "<group>";
 		};
 		B8C7EBB0B8C7EB3000000001 /* LICENSE */ = {
@@ -105,6 +114,43 @@
 				B8C502E0B8C46C2000000001 /* SampleCode.xcconfig */,
 			);
 			name = Configuration;
+			sourceTree = "<group>";
+		};
+		DD7D16522191F9790065F4DB /* ARKit Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				9B7CEC6121ACDBC700173C7A /* ARAnchors */,
+				DDA9B17320E1977400D48CDA /* NodeCreator.swift */,
+				9B8777D220E1E953007D6349 /* CloudPoints.swift */,
+				11C983EB20953B7900394C67 /* MultipeerSession.swift */,
+				DD7D16502191F9620065F4DB /* CapturedImageSampler.swift */,
+			);
+			path = "ARKit Utilities";
+			sourceTree = "<group>";
+		};
+		DD7D16532191F9F30065F4DB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				111DC86820ACAB690037F7B1 /* RoundedButton.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DD7D16552191FA120065F4DB /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				842316E31F2030C300D189D1 /* ViewController.swift */,
+			);
+			path = "View Controllers";
+			sourceTree = "<group>";
+		};
+		DD7D16562191FA2B0065F4DB /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				11E97209209A355F006E3D26 /* Utilities.swift */,
+				DDA9B17120E16C8E00D48CDA /* LocalDataManager.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -181,8 +227,10 @@
 			files = (
 				9B8777D320E1E953007D6349 /* CloudPoints.swift in Sources */,
 				11E9720A209A355F006E3D26 /* Utilities.swift in Sources */,
+				9B7CEC6321ACDBDE00173C7A /* ColorBoxAnchor.swift in Sources */,
 				111DC86920ACAB690037F7B1 /* RoundedButton.swift in Sources */,
 				11C983EC20953B7900394C67 /* MultipeerSession.swift in Sources */,
+				DD7D16512191F9620065F4DB /* CapturedImageSampler.swift in Sources */,
 				DDA9B17420E1977400D48CDA /* NodeCreator.swift in Sources */,
 				842316E41F2030C300D189D1 /* ViewController.swift in Sources */,
 				842316E01F2030C300D189D1 /* AppDelegate.swift in Sources */,

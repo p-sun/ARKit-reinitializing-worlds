@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14269.14" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7dh-A0-qGE">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="7dh-A0-qGE">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14252.5"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -46,13 +46,23 @@
                                             <action selector="saveMap:" destination="7dh-A0-qGE" eventType="touchUpInside" id="49f-92-nm3"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gad-7G-M17" customClass="RoundedButton" customModule="ARMultiuser" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="104" width="140" height="34"/>
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gad-7G-M17" customClass="RoundedButton" customModule="ARMultiuser" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="95" width="140" height="0.0"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <inset key="contentEdgeInsets" minX="13" minY="8" maxX="13" maxY="8"/>
                                         <state key="normal" title="Send World Map"/>
                                         <connections>
                                             <action selector="shareSession:" destination="7dh-A0-qGE" eventType="touchUpInside" id="LXd-41-0lM"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mLW-kc-kQR" userLabel="Show Cloud Points" customClass="RoundedButton" customModule="ARMultiuser" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="104" width="140" height="34"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <inset key="contentEdgeInsets" minX="13" minY="8" maxX="13" maxY="8"/>
+                                        <state key="normal" title="___ nothing ____"/>
+                                        <connections>
+                                            <action selector="shareSession:" destination="7dh-A0-qGE" eventType="touchUpInside" id="aGn-GJ-B4t"/>
+                                            <action selector="showCloudPoints:" destination="7dh-A0-qGE" eventType="touchUpInside" id="fmP-Tv-SHO"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -98,8 +108,8 @@
                                     <action selector="resetTracking:" destination="7dh-A0-qGE" eventType="touchUpInside" id="OJ4-o7-irp"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aD6-EU-VHg">
-                                <rect key="frame" x="166.5" y="447.5" width="42" height="20.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Map Status" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aD6-EU-VHg">
+                                <rect key="frame" x="144" y="447.5" width="87" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -108,7 +118,6 @@
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="71x-2l-AWw" firstAttribute="bottom" secondItem="AxE-Oe-8LO" secondAttribute="bottom" constant="41" id="5c0-i3-w7o"/>
-                            <constraint firstItem="AxE-Oe-8LO" firstAttribute="centerX" secondItem="loo-cG-myf" secondAttribute="centerX" id="8Dg-l7-wQC"/>
                             <constraint firstAttribute="bottom" secondItem="BrB-h1-WRS" secondAttribute="bottom" id="8rY-15-6Ru"/>
                             <constraint firstItem="cOo-FY-E3u" firstAttribute="trailing" secondItem="71x-2l-AWw" secondAttribute="trailing" id="98g-WD-pt7"/>
                             <constraint firstItem="cOo-FY-E3u" firstAttribute="firstBaseline" secondItem="hCE-IA-wLv" secondAttribute="firstBaseline" constant="4" id="AIE-1n-0hq"/>
@@ -117,6 +126,7 @@
                             <constraint firstItem="aD6-EU-VHg" firstAttribute="centerX" secondItem="loo-cG-myf" secondAttribute="centerX" id="VA4-Ss-iKu"/>
                             <constraint firstItem="37h-bD-Iyn" firstAttribute="leading" secondItem="loo-cG-myf" secondAttribute="leadingMargin" id="YWP-ZC-63w"/>
                             <constraint firstItem="71x-2l-AWw" firstAttribute="trailing" secondItem="BrB-h1-WRS" secondAttribute="trailing" id="a3B-9u-pb1"/>
+                            <constraint firstItem="AxE-Oe-8LO" firstAttribute="centerX" secondItem="loo-cG-myf" secondAttribute="centerX" id="aBs-bx-Q0k"/>
                             <constraint firstItem="AxE-Oe-8LO" firstAttribute="top" secondItem="aD6-EU-VHg" secondAttribute="bottom" constant="20" id="jpC-ND-0O7"/>
                             <constraint firstItem="71x-2l-AWw" firstAttribute="top" secondItem="cOo-FY-E3u" secondAttribute="top" id="kqp-b7-tN4"/>
                             <constraint firstAttribute="top" secondItem="BrB-h1-WRS" secondAttribute="top" id="ulI-xa-35w"/>
@@ -131,6 +141,7 @@
                         <outlet property="sendMapButton" destination="gad-7G-M17" id="yj3-eb-u44"/>
                         <outlet property="sessionInfoLabel" destination="hCE-IA-wLv" id="fqx-0o-IdX"/>
                         <outlet property="sessionInfoView" destination="37h-bD-Iyn" id="e6g-gN-reW"/>
+                        <outlet property="showCloudPointsButton" destination="mLW-kc-kQR" id="DLE-y3-Ndk"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hvH-ud-t1P" userLabel="First Responder" sceneMemberID="firstResponder"/>
