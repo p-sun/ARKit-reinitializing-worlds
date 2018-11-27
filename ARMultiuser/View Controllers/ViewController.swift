@@ -47,20 +47,14 @@ class ViewController: UIViewController {
     
     private var mapProvider: MCPeerID?
 	
+	private var previousPosition: SCNVector3?
 	
-	
-    
-//    private var imageSampler: CapturedImageSampler? = nil
-    
     // MARK: - View Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         restartMapButton.setTitle("ShouldRestartMap = \(shouldRestartMap)", for: .normal) // TODO refactor
         showCloudPointsButton.setTitle("Show Cloud Points", for: .normal)
-		
-		// Hide this button for now. It's for WIP feature.
-//        showCloudPointsButton.isHidden = true
 		
         // Loading from other users
 		multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
@@ -93,7 +87,7 @@ class ViewController: UIViewController {
             LocalDataManager.loadLocalMapData(receivedDataHandler: receivedData)
         }
         
-        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
         // Prevent the screen from being dimmed after a while as users will likely
         // have long periods of interaction without touching the screen or buttons.
         UIApplication.shared.isIdleTimerDisabled = true
@@ -105,7 +99,6 @@ class ViewController: UIViewController {
         // Pause the view's AR session.
         sceneView.session.pause()
     }
-
     
     // MARK: - Multiuser shared session
     
@@ -118,17 +111,37 @@ class ViewController: UIViewController {
             .first
             else { return }
         
-        // Place an anchor for a virtual character. The model appears in renderer(_:didAdd:for:).
 		guard let currentFrame = sceneView.session.currentFrame else {
 			return
 		}
 
-		let arCamera = currentFrame.camera
-		let rotation = simd_float4x4(SCNMatrix4MakeRotation(arCamera.eulerAngles.y, 0, 1, 0))
-		let finalTransform = simd_mul(hitTestResult.worldTransform, rotation)
+		// MARK: Place Anchors
+		// Place an anchor for a virtual character. The model appears in renderer(_:didAdd:for:).
 
-	    let anchor = ARAnchor(name: "panda", transform: finalTransform)
+		// Place Panda *******************
+		let arCamera = currentFrame.camera
+		let pandaRotation = simd_float4x4(SCNMatrix4MakeRotation(arCamera.eulerAngles.y, 0, 1, 0))
+		let pandaTransform = simd_mul(hitTestResult.worldTransform, pandaRotation)
+	    let anchor = ARAnchor(name: "panda", transform: pandaTransform)
         sceneView.session.add(anchor: anchor)
+		
+		// Place Waypoint ************************
+		
+		let targetPosition = SCNVector3(hitTestResult.worldTransform.translation)
+		
+		if let previousPosition = previousPosition {
+			let tNode = SCNNode()
+			tNode.position = previousPosition
+			tNode.look(at: targetPosition)
+			let tempTransform = simd_float4x4(tNode.transform)
+			
+			let lineLength = previousPosition.distance(vector: targetPosition)
+			let anchor = WaypointLineAnchor(length: lineLength, transform: tempTransform)
+			sceneView.session.add(anchor: anchor)
+		}
+		
+		previousPosition = targetPosition
+		
         
         // Send the anchor info to peers, so they can place the same content.
 //        guard let data = try? NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
@@ -300,7 +313,7 @@ class ViewController: UIViewController {
     }
 }
 
-// MARK: - AR session management
+// MARK: - AR Session State management
 
 extension ViewController {
 	
@@ -358,6 +371,8 @@ extension ViewController {
     }
 }
 
+// MARK: - AR Session Observer
+
 extension ViewController: ARSessionDelegate {
     
     // MARK: Session Frame and Camera
@@ -367,10 +382,6 @@ extension ViewController: ARSessionDelegate {
 	}
 	
 	func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        
-//        if imageSampler != nil {
-//            imageSampler == nil
-//        }
         
 		switch frame.worldMappingStatus {
 		case .notAvailable, .limited:
@@ -408,15 +419,6 @@ extension ViewController: ARSessionDelegate {
     func sessionShouldAttemptRelocalization(_ session: ARSession) -> Bool {
         return true
     }
-//
-//    private func initizalizeImageSampler(frame: ARFrame) {
-//        print("Initializing image sampler")
-//        do {
-//            imageSampler = try CapturedImageSampler(frame: frame)
-//        } catch {
-//            print("Error: Could not initialize image sampler \(error)")
-//        }
-//    }
 }
 
 // MARK: - Adding Nodes
@@ -424,13 +426,15 @@ extension ViewController: ARSessionDelegate {
 extension ViewController: ARSCNViewDelegate {
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
 		
-        if let name = anchor.name, name.hasPrefix("panda") {
+        if let anchorName = anchor.name, anchorName.hasPrefix("panda") {
             node.addChildNode(NodeCreator.createRedPandaModel())
-			node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 0.4))
 		} else if let colorAnchor = anchor as? ColorBoxAnchor {
 			let boxNode = NodeCreator.box(color: colorAnchor.color, size: 0.003)
 			boxNode.name = "Feature Point Box"
 			node.addChildNode(boxNode)
+		} else if let waypointAnchor = anchor as? WaypointLineAnchor {
+			let waypointBox = NodeCreator.createWaypointBox(length: CGFloat(waypointAnchor.length))
+			node.addChildNode(waypointBox)
 		} else {
             node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
         }
