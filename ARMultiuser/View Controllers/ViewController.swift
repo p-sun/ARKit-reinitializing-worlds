@@ -46,6 +46,11 @@ class ViewController: UIViewController {
     private var featurePointsCloudParent = SCNNode()
     
     private var mapProvider: MCPeerID?
+	
+	
+	
+    
+//    private var imageSampler: CapturedImageSampler? = nil
     
     // MARK: - View Life Cycle
     
@@ -53,28 +58,14 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         restartMapButton.setTitle("ShouldRestartMap = \(shouldRestartMap)", for: .normal) // TODO refactor
         showCloudPointsButton.setTitle("Show Cloud Points", for: .normal)
-        
+		
+		// Hide this button for now. It's for WIP feature.
+//        showCloudPointsButton.isHidden = true
+		
         // Loading from other users
-       multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
+		multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
 
-//        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
-//
-//            guard let strongSelf = self else { return }
-//
-//            if let cloud = strongSelf.sceneView.session.currentFrame?.rawFeaturePoints {
-////                for point in cloud.points {
-////                    let didAddPoint = strongSelf.cloudPoints.addIfNeeded(point)
-////                    if didAddPoint {
-////                        let childNode = NodeCreator.box(color: .purple)
-////                        childNode.position = SCNVector3Make(point.x, point.y, point.z)
-////                        strongSelf.sceneView.scene.rootNode.addChildNode(childNode)
-////                    }
-////                }
-//
-//                //print("There are features \(cloud.points.count)")
-//            }
-//        }
-        
+		resetFeaturePointsCloudParent()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -97,9 +88,7 @@ class ViewController: UIViewController {
 
         // Start the view's AR session.
         if shouldRestartMap {
-            let configuration = ARWorldTrackingConfiguration()
-            configuration.planeDetection = .horizontal
-            sceneView.session.run(configuration)
+            runNewSession()
         } else {
             LocalDataManager.loadLocalMapData(receivedDataHandler: receivedData)
         }
@@ -130,24 +119,33 @@ class ViewController: UIViewController {
             else { return }
         
         // Place an anchor for a virtual character. The model appears in renderer(_:didAdd:for:).
-        let anchor = ARAnchor(name: "panda", transform: hitTestResult.worldTransform)
+		guard let currentFrame = sceneView.session.currentFrame else {
+			return
+		}
+
+		let arCamera = currentFrame.camera
+		let rotation = simd_float4x4(SCNMatrix4MakeRotation(arCamera.eulerAngles.y, 0, 1, 0))
+		let finalTransform = simd_mul(hitTestResult.worldTransform, rotation)
+
+	    let anchor = ARAnchor(name: "panda", transform: finalTransform)
         sceneView.session.add(anchor: anchor)
         
         // Send the anchor info to peers, so they can place the same content.
-        guard let data = try? NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
-            else { fatalError("can't encode anchor") }
-        self.multipeerSession.sendToAllPeers(data)
+//        guard let data = try? NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
+//            else { fatalError("can't encode anchor") }
+//        self.multipeerSession.sendToAllPeers(data)
     }
     
     /// - Tag: GetWorldMap
     @IBAction func shareSession(_ button: UIButton) {
-        sceneView.session.getCurrentWorldMap { worldMap, error in
-            guard let map = worldMap
-                else { print("Error: \(error!.localizedDescription)"); return }
-            guard let data = try? NSKeyedArchiver.archivedData(withRootObject: map, requiringSecureCoding: true)
-                else { fatalError("can't encode map") }
-            self.multipeerSession.sendToAllPeers(data)
-        }
+		// sharing doesn't work right now
+//        sceneView.session.getCurrentWorldMap { worldMap, error in
+//            guard let map = worldMap
+//                else { print("Error: \(error!.localizedDescription)"); return }
+//            guard let data = try? NSKeyedArchiver.archivedData(withRootObject: map, requiringSecureCoding: true)
+//                else { fatalError("can't encode map") }
+//            self.multipeerSession.sendToAllPeers(data)
+//        }
     }
     
     @IBAction func saveMap(_ button: UIButton) {
@@ -158,17 +156,17 @@ class ViewController: UIViewController {
             
             print("Saving map with \(map.anchors.count) anchors")
 
-            guard let data = try? NSKeyedArchiver.archivedData(withRootObject: map,
-                                                               requiringSecureCoding: true) else {
-                    fatalError("can't encode map")
+            guard let data = try? NSKeyedArchiver.archivedData(withRootObject: map, requiringSecureCoding: false) else {
+				fatalError("can't encode map")
             }
             LocalDataManager.saveData(data)
         }
     }
     
-    @IBAction func showCloudPoints(_ sender: Any) {
+    @IBAction func showCloudPoints(_ button: UIButton) {
+        
         sceneView.session.getCurrentWorldMap { [weak self] worldMap, error in
-            
+    
             print("Got world map")
             
             guard let strongSelf = self else {
@@ -179,32 +177,101 @@ class ViewController: UIViewController {
                 print("Error: \(error!.localizedDescription)")
                 return
             }
-            
-            print("MAP points: \(map.rawFeaturePoints.points.count) points. FRAME points \(strongSelf.sceneView.session.currentFrame?.rawFeaturePoints?.points.count) points")
-            
-            self?.drawFeaturePoints(cloudToDraw: map.rawFeaturePoints)
+			
+			strongSelf.samplePointsInFrame()
+			// strongSelf.sampleAllPoints(map: map)
         }
     }
-    
-    private func drawFeaturePoints(cloudToDraw: ARPointCloud) {
+	
+	private func resetFeaturePointsCloudParent() {
+		
+		featurePointsCloudParent.removeFromParentNode()
+		
+		featurePointsCloudParent = SCNNode()
+		sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
+	}
+	
+	private func samplePointsInFrame() {
+		guard let frame = sceneView.session.currentFrame,
+			let imageSampler = createImageSampler(from: frame),
+			let cloudToDraw = frame.rawFeaturePoints else {
+			return
+		}
+		
+		let screenFrameWidth = Float(view.frame.width)
+		let screenFrameHeight = Float(view.frame.height)
+		
+		for point in cloudToDraw.points {
+			
+			let pointOn2DScreen = sceneView.projectPoint(SCNVector3(point))
+
+			let scalarX = CGFloat(pointOn2DScreen.x / screenFrameWidth)
+			let scalarY = CGFloat(pointOn2DScreen.y / screenFrameHeight)
+			
+			if let colorAtPoint = imageSampler.getColor(atX: scalarX, y: scalarY) {
+
+				let anchor = ColorBoxAnchor(color: colorAtPoint, position: point)
+				sceneView.session.add(anchor: anchor)
+				
+//				let childNode = NodeCreator.box(color: colorAtPoint, size: 0.003)
+//				childNode.name = "Feature Point Box"
+//				childNode.position = SCNVector3Make(point.x, point.y, point.z)
+//				featurePointsCloudParent.addChildNode(childNode)
+			}
+		}
+	}
+	
+	private func sampleAllPoints(map: ARWorldMap) {
+		if let currentFrame = sceneView.session.currentFrame,
+			let imageSampler = createImageSampler(from: currentFrame) {
+			
+			print("MAP rawFeaturePoints: \(map.rawFeaturePoints.points.count) points. \n\tFRAME rawFeaturePoints \(String(describing: sceneView.session.currentFrame?.rawFeaturePoints?.points.count)) points")
+			
+			drawFeaturePoints(cloudToDraw: map.rawFeaturePoints, imageSampler: imageSampler)
+		}
+	}
+	
+	private func createImageSampler(from frame: ARFrame) -> CapturedImageSampler? {
+		do {
+			return try CapturedImageSampler(frame: frame)
+		} catch {
+			print("Error: Could not initialize image sampler \(error)")
+			return nil
+		}
+	}
+	
+    private func drawFeaturePoints(cloudToDraw: ARPointCloud, imageSampler: CapturedImageSampler) {
         
         featurePointsCloudParent.removeFromParentNode()
         
         featurePointsCloudParent = SCNNode()
         sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
-
+        
+//        let screenFrameWidth = Float(view.frame.width)
+//        let screenFrameHeight = Float(view.frame.height)
+		
         for point in cloudToDraw.points {
-            let childNode = NodeCreator.box(color: .green, size: 0.003)
-            childNode.name = "Green Box"
+            
+//            let pointOn2DScreen = sceneView.projectPoint(SCNVector3(point))
+			
+            let colorAtPoint: UIColor
+//            if pointOn2DScreen.x < 0.0 || pointOn2DScreen.x > screenFrameWidth ||
+//               pointOn2DScreen.y < 0.0 || pointOn2DScreen.y > screenFrameHeight {
+                colorAtPoint = .green // Point out of screen
+//            } else {
+//                let scalarX = CGFloat(pointOn2DScreen.x / screenFrameWidth)
+//                let scalarY = CGFloat(pointOn2DScreen.y / screenFrameHeight)
+//                colorAtPoint = imageSampler.getColor(atX: scalarX, y: scalarY) ?? .red // Point on screen but we couldn't get the color
+//            }
+			
+            let childNode = NodeCreator.box(color: colorAtPoint, size: 0.003)
+            childNode.name = "Feature Point Box"
             childNode.position = SCNVector3Make(point.x, point.y, point.z)
             featurePointsCloudParent.addChildNode(childNode)
         }
-        
-        print("total nodes \(featurePointsCloudParent.childNodes.count)")
     }
     
     func receivedData(_ data: Data, from peer: MCPeerID) {
-        
         if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARWorldMap.classForKeyedUnarchiver()], from: data),
             let worldMap = unarchived as? ARWorldMap {
             
@@ -223,15 +290,12 @@ class ViewController: UIViewController {
             
             // Remember who provided the map for showing UI feedback.
             mapProvider = peer
-        }
-        else
-            if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARAnchor.classForKeyedUnarchiver()], from: data),
+        } else if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARAnchor.classForKeyedUnarchiver()], from: data),
             let anchor = unarchived as? ARAnchor {
             
             sceneView.session.add(anchor: anchor)
-        }
-        else {
-            print("unknown data recieved from \(peer)")
+        } else {
+			print("ERROR: unknown data recieved from \(peer)")
         }
     }
 }
@@ -284,6 +348,10 @@ extension ViewController {
     }
     
     @IBAction func resetTracking(_ sender: UIButton?) {
+       runNewSession()
+    }
+    
+    private func runNewSession() {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
@@ -299,6 +367,11 @@ extension ViewController: ARSessionDelegate {
 	}
 	
 	func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        
+//        if imageSampler != nil {
+//            imageSampler == nil
+//        }
+        
 		switch frame.worldMappingStatus {
 		case .notAvailable, .limited:
 			sendMapButton.isEnabled = false
@@ -335,18 +408,30 @@ extension ViewController: ARSessionDelegate {
     func sessionShouldAttemptRelocalization(_ session: ARSession) -> Bool {
         return true
     }
+//
+//    private func initizalizeImageSampler(frame: ARFrame) {
+//        print("Initializing image sampler")
+//        do {
+//            imageSampler = try CapturedImageSampler(frame: frame)
+//        } catch {
+//            print("Error: Could not initialize image sampler \(error)")
+//        }
+//    }
 }
 
 // MARK: - Adding Nodes
 
 extension ViewController: ARSCNViewDelegate {
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        
-        print("Did add node for anchor name \(anchor.name)")
-        
+		
         if let name = anchor.name, name.hasPrefix("panda") {
             node.addChildNode(NodeCreator.createRedPandaModel())
-        } else {
+			node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 0.4))
+		} else if let colorAnchor = anchor as? ColorBoxAnchor {
+			let boxNode = NodeCreator.box(color: colorAnchor.color, size: 0.003)
+			boxNode.name = "Feature Point Box"
+			node.addChildNode(boxNode)
+		} else {
             node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
         }
     }
