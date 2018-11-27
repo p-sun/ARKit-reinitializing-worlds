@@ -17,6 +17,9 @@
 		842316EC1F2030C300D189D1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 842316EA1F2030C300D189D1 /* LaunchScreen.storyboard */; };
 		84ABEA0A1F3D15E70052D547 /* Assets.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 84ABEA091F3D15E70052D547 /* Assets.scnassets */; };
 		9B7CEC6321ACDBDE00173C7A /* ColorBoxAnchor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7CEC6221ACDBDE00173C7A /* ColorBoxAnchor.swift */; };
+		9B7CEC6621ACE01500173C7A /* LineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7CEC6521ACE01500173C7A /* LineNode.swift */; };
+		9B7CEC6821ACE12700173C7A /* SCNVector+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7CEC6721ACE12700173C7A /* SCNVector+Extensions.swift */; };
+		9B7CEC6A21ACE17400173C7A /* WaypointLineAnchor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7CEC6921ACE17400173C7A /* WaypointLineAnchor.swift */; };
 		9B8777D320E1E953007D6349 /* CloudPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8777D220E1E953007D6349 /* CloudPoints.swift */; };
 		DD7D16512191F9620065F4DB /* CapturedImageSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7D16502191F9620065F4DB /* CapturedImageSampler.swift */; };
 		DDA9B17220E16C8E00D48CDA /* LocalDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA9B17120E16C8E00D48CDA /* LocalDataManager.swift */; };
@@ -36,6 +39,9 @@
 		842316ED1F2030C300D189D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		84ABEA091F3D15E70052D547 /* Assets.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = Assets.scnassets; sourceTree = "<group>"; };
 		9B7CEC6221ACDBDE00173C7A /* ColorBoxAnchor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorBoxAnchor.swift; sourceTree = "<group>"; };
+		9B7CEC6521ACE01500173C7A /* LineNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineNode.swift; sourceTree = "<group>"; };
+		9B7CEC6721ACE12700173C7A /* SCNVector+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SCNVector+Extensions.swift"; sourceTree = "<group>"; };
+		9B7CEC6921ACE17400173C7A /* WaypointLineAnchor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaypointLineAnchor.swift; sourceTree = "<group>"; };
 		9B8777D220E1E953007D6349 /* CloudPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudPoints.swift; sourceTree = "<group>"; };
 		B8C502E0B8C46C2000000001 /* SampleCode.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 		B8C7CF80B8C72A5000000001 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
@@ -80,6 +86,7 @@
 			children = (
 				DD7D16552191FA120065F4DB /* View Controllers */,
 				DD7D16532191F9F30065F4DB /* Views */,
+				9B7CEC6121ACDBC700173C7A /* ARAnchors */,
 				DD7D16522191F9790065F4DB /* ARKit Utilities */,
 				DD7D16562191FA2B0065F4DB /* Utilities */,
 				842316DF1F2030C300D189D1 /* AppDelegate.swift */,
@@ -96,8 +103,18 @@
 			isa = PBXGroup;
 			children = (
 				9B7CEC6221ACDBDE00173C7A /* ColorBoxAnchor.swift */,
+				9B7CEC6921ACE17400173C7A /* WaypointLineAnchor.swift */,
 			);
 			path = ARAnchors;
+			sourceTree = "<group>";
+		};
+		9B7CEC6421ACE00600173C7A /* Node Creator */ = {
+			isa = PBXGroup;
+			children = (
+				9B7CEC6521ACE01500173C7A /* LineNode.swift */,
+				DDA9B17320E1977400D48CDA /* NodeCreator.swift */,
+			);
+			path = "Node Creator";
 			sourceTree = "<group>";
 		};
 		B8C7EBB0B8C7EB3000000001 /* LICENSE */ = {
@@ -119,8 +136,7 @@
 		DD7D16522191F9790065F4DB /* ARKit Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				9B7CEC6121ACDBC700173C7A /* ARAnchors */,
-				DDA9B17320E1977400D48CDA /* NodeCreator.swift */,
+				9B7CEC6421ACE00600173C7A /* Node Creator */,
 				9B8777D220E1E953007D6349 /* CloudPoints.swift */,
 				11C983EB20953B7900394C67 /* MultipeerSession.swift */,
 				DD7D16502191F9620065F4DB /* CapturedImageSampler.swift */,
@@ -149,6 +165,7 @@
 			children = (
 				11E97209209A355F006E3D26 /* Utilities.swift */,
 				DDA9B17120E16C8E00D48CDA /* LocalDataManager.swift */,
+				9B7CEC6721ACE12700173C7A /* SCNVector+Extensions.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -225,12 +242,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B7CEC6A21ACE17400173C7A /* WaypointLineAnchor.swift in Sources */,
 				9B8777D320E1E953007D6349 /* CloudPoints.swift in Sources */,
 				11E9720A209A355F006E3D26 /* Utilities.swift in Sources */,
+				9B7CEC6621ACE01500173C7A /* LineNode.swift in Sources */,
 				9B7CEC6321ACDBDE00173C7A /* ColorBoxAnchor.swift in Sources */,
 				111DC86920ACAB690037F7B1 /* RoundedButton.swift in Sources */,
 				11C983EC20953B7900394C67 /* MultipeerSession.swift in Sources */,
 				DD7D16512191F9620065F4DB /* CapturedImageSampler.swift in Sources */,
+				9B7CEC6821ACE12700173C7A /* SCNVector+Extensions.swift in Sources */,
 				DDA9B17420E1977400D48CDA /* NodeCreator.swift in Sources */,
 				842316E41F2030C300D189D1 /* ViewController.swift in Sources */,
 				842316E01F2030C300D189D1 /* AppDelegate.swift in Sources */,
