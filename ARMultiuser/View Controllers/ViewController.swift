@@ -196,94 +196,6 @@ class ViewController: UIViewController {
         }
     }
 	
-	private func resetFeaturePointsCloudParent() {
-		
-		featurePointsCloudParent.removeFromParentNode()
-		
-		featurePointsCloudParent = SCNNode()
-		sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
-	}
-	
-	private func samplePointsInFrame() {
-		guard let frame = sceneView.session.currentFrame,
-			let imageSampler = createImageSampler(from: frame),
-			let cloudToDraw = frame.rawFeaturePoints else {
-			return
-		}
-		
-		let screenFrameWidth = Float(view.frame.width)
-		let screenFrameHeight = Float(view.frame.height)
-		
-		for point in cloudToDraw.points {
-			
-			let pointOn2DScreen = sceneView.projectPoint(SCNVector3(point))
-
-			let scalarX = CGFloat(pointOn2DScreen.x / screenFrameWidth)
-			let scalarY = CGFloat(pointOn2DScreen.y / screenFrameHeight)
-			
-			if let colorAtPoint = imageSampler.getColor(atX: scalarX, y: scalarY) {
-
-				let anchor = ColorBoxAnchor(color: colorAtPoint, position: point)
-				sceneView.session.add(anchor: anchor)
-				
-//				let childNode = NodeCreator.box(color: colorAtPoint, size: 0.003)
-//				childNode.name = "Feature Point Box"
-//				childNode.position = SCNVector3Make(point.x, point.y, point.z)
-//				featurePointsCloudParent.addChildNode(childNode)
-			}
-		}
-	}
-	
-	private func sampleAllPoints(map: ARWorldMap) {
-		if let currentFrame = sceneView.session.currentFrame,
-			let imageSampler = createImageSampler(from: currentFrame) {
-			
-			print("MAP rawFeaturePoints: \(map.rawFeaturePoints.points.count) points. \n\tFRAME rawFeaturePoints \(String(describing: sceneView.session.currentFrame?.rawFeaturePoints?.points.count)) points")
-			
-			drawFeaturePoints(cloudToDraw: map.rawFeaturePoints, imageSampler: imageSampler)
-		}
-	}
-	
-	private func createImageSampler(from frame: ARFrame) -> CapturedImageSampler? {
-		do {
-			return try CapturedImageSampler(frame: frame)
-		} catch {
-			print("Error: Could not initialize image sampler \(error)")
-			return nil
-		}
-	}
-	
-    private func drawFeaturePoints(cloudToDraw: ARPointCloud, imageSampler: CapturedImageSampler) {
-        
-        featurePointsCloudParent.removeFromParentNode()
-        
-        featurePointsCloudParent = SCNNode()
-        sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
-        
-//        let screenFrameWidth = Float(view.frame.width)
-//        let screenFrameHeight = Float(view.frame.height)
-		
-        for point in cloudToDraw.points {
-            
-//            let pointOn2DScreen = sceneView.projectPoint(SCNVector3(point))
-			
-            let colorAtPoint: UIColor
-//            if pointOn2DScreen.x < 0.0 || pointOn2DScreen.x > screenFrameWidth ||
-//               pointOn2DScreen.y < 0.0 || pointOn2DScreen.y > screenFrameHeight {
-                colorAtPoint = .green // Point out of screen
-//            } else {
-//                let scalarX = CGFloat(pointOn2DScreen.x / screenFrameWidth)
-//                let scalarY = CGFloat(pointOn2DScreen.y / screenFrameHeight)
-//                colorAtPoint = imageSampler.getColor(atX: scalarX, y: scalarY) ?? .red // Point on screen but we couldn't get the color
-//            }
-			
-            let childNode = NodeCreator.box(color: colorAtPoint, size: 0.003)
-            childNode.name = "Feature Point Box"
-            childNode.position = SCNVector3Make(point.x, point.y, point.z)
-            featurePointsCloudParent.addChildNode(childNode)
-        }
-    }
-    
     func receivedData(_ data: Data, from peer: MCPeerID) {
         if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARWorldMap.classForKeyedUnarchiver()], from: data),
             let worldMap = unarchived as? ARWorldMap {
@@ -439,4 +351,98 @@ extension ViewController: ARSCNViewDelegate {
             node.addChildNode(NodeCreator.createAxesNode(quiverLength: 0.3, quiverThickness: 1.0))
         }
     }
+}
+
+// MARK: - Visualizing Feature Points
+
+extension ViewController {
+	
+	private func resetFeaturePointsCloudParent() {
+		
+		featurePointsCloudParent.removeFromParentNode()
+		
+		featurePointsCloudParent = SCNNode()
+		sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
+	}
+	
+	private func samplePointsInFrame() {
+		guard let frame = sceneView.session.currentFrame,
+			let imageSampler = createImageSampler(from: frame),
+			let cloudToDraw = frame.rawFeaturePoints else {
+				return
+		}
+		
+		let screenFrameWidth = Float(view.frame.width)
+		let screenFrameHeight = Float(view.frame.height)
+		
+		for point in cloudToDraw.points {
+			
+			let pointOn2DScreen = sceneView.projectPoint(SCNVector3(point))
+			
+			let scalarX = CGFloat(pointOn2DScreen.x / screenFrameWidth)
+			let scalarY = CGFloat(pointOn2DScreen.y / screenFrameHeight)
+			
+			if let colorAtPoint = imageSampler.getColor(atX: scalarX, y: scalarY) {
+				
+				let anchor = ColorBoxAnchor(color: colorAtPoint, position: point)
+				sceneView.session.add(anchor: anchor)
+				
+				//				let childNode = NodeCreator.box(color: colorAtPoint, size: 0.003)
+				//				childNode.name = "Feature Point Box"
+				//				childNode.position = SCNVector3Make(point.x, point.y, point.z)
+				//				featurePointsCloudParent.addChildNode(childNode)
+			}
+		}
+	}
+	
+	private func sampleAllPoints(map: ARWorldMap) {
+		if let currentFrame = sceneView.session.currentFrame,
+			let imageSampler = createImageSampler(from: currentFrame) {
+			
+			print("MAP rawFeaturePoints: \(map.rawFeaturePoints.points.count) points. \n\tFRAME rawFeaturePoints \(String(describing: sceneView.session.currentFrame?.rawFeaturePoints?.points.count)) points")
+			
+			drawFeaturePoints(cloudToDraw: map.rawFeaturePoints, imageSampler: imageSampler)
+		}
+	}
+	
+	private func createImageSampler(from frame: ARFrame) -> CapturedImageSampler? {
+		do {
+			return try CapturedImageSampler(frame: frame)
+		} catch {
+			print("Error: Could not initialize image sampler \(error)")
+			return nil
+		}
+	}
+	
+	private func drawFeaturePoints(cloudToDraw: ARPointCloud, imageSampler: CapturedImageSampler) {
+		
+		featurePointsCloudParent.removeFromParentNode()
+		
+		featurePointsCloudParent = SCNNode()
+		sceneView.scene.rootNode.addChildNode(featurePointsCloudParent)
+		
+		//        let screenFrameWidth = Float(view.frame.width)
+		//        let screenFrameHeight = Float(view.frame.height)
+		
+		for point in cloudToDraw.points {
+			
+			//            let pointOn2DScreen = sceneView.projectPoint(SCNVector3(point))
+			
+			let colorAtPoint: UIColor
+			//            if pointOn2DScreen.x < 0.0 || pointOn2DScreen.x > screenFrameWidth ||
+			//               pointOn2DScreen.y < 0.0 || pointOn2DScreen.y > screenFrameHeight {
+			colorAtPoint = .green // Point out of screen
+			//            } else {
+			//                let scalarX = CGFloat(pointOn2DScreen.x / screenFrameWidth)
+			//                let scalarY = CGFloat(pointOn2DScreen.y / screenFrameHeight)
+			//                colorAtPoint = imageSampler.getColor(atX: scalarX, y: scalarY) ?? .red // Point on screen but we couldn't get the color
+			//            }
+			
+			let childNode = NodeCreator.box(color: colorAtPoint, size: 0.003)
+			childNode.name = "Feature Point Box"
+			childNode.position = SCNVector3Make(point.x, point.y, point.z)
+			featurePointsCloudParent.addChildNode(childNode)
+		}
+	}
+	
 }

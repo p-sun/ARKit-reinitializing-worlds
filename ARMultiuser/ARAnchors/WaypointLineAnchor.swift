@@ -26,10 +26,7 @@ class WaypointLineAnchor: ARAnchor {
 		super.init(anchor: anchor)
 	}
 	
-	required init?(coder aDecoder: NSCoder) {//
-//		guard let floatLength = aDecoder.decodeFloat(forKey: Keys.lengthKey.rawValue) else {
-//			return nil
-//		}
+	required init?(coder aDecoder: NSCoder) {
 		length = aDecoder.decodeFloat(forKey: Keys.lengthKey.rawValue)
 		
 		super.init(coder: aDecoder)
